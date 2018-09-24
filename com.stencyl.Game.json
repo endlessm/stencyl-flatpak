@@ -1,8 +1,11 @@
 {
     "app-id": "com.stencyl.Game",
-    "runtime": "com.endlessm.Sdk",
-    "runtime-version": "eos3.1",
-    "sdk": "com.endlessm.Sdk",
+    "runtime": "org.freedesktop.Platform",
+    "runtime-version": "1.6",
+    "sdk": "org.freedesktop.Sdk",
+    "sdk-extensions": [
+        "org.freedesktop.Sdk.Extension.openjdk10"
+    ],
     "command": "stencyl",
     "finish-args": [
         "--socket=x11",
@@ -10,17 +13,104 @@
         "--share=ipc",
         "--share=network",
         "--device=all",
-        "--filesystem=host",
-        "--extra-data=Stencyl-64-full.tar.gz:c27d00dc83b5f443c35d785a0d22340f35c1cdb289c8cfe30417963475d4af29:207725021::http://mario.stencyl.net/public/Stencyl-64-full.tar.gz"
+        "--filesystem=host"
     ],
     "modules": [
         {
-            "name": "resources",
-            "no-autogen": true,
+            "name": "openjdk",
+            "buildsystem": "simple",
+            "build-commands": [
+                "/usr/lib/sdk/openjdk10/install.sh"
+            ]
+        },
+        {
+            "name": "libatomic_ops",
             "sources": [
                 {
+                    "type": "archive",
+                    "url": "https://github.com/ivmai/libatomic_ops/releases/download/v7.6.6/libatomic_ops-7.6.6.tar.gz",
+                    "sha256": "99feabc5f54877f314db4fadeb109f0b3e1d1a54afb6b4b3dfba1e707e38e074"
+                }
+            ]
+        },
+        {
+            "name": "gc",
+            "cleanup": [
+              "/share"
+            ],
+            "sources": [
+              {
+                "type": "archive",
+                "url": "http://www.hboehm.info/gc/gc_source/gc-7.6.4.tar.gz",
+                "sha256": "b94c1f2535f98354811ee644dccab6e84a0cf73e477ca03fb5a3758fb1fecd1c"
+              }
+            ]
+        },
+        {
+            "name": "psmisc",
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://downloads.sourceforge.net/psmisc/psmisc-23.1.tar.xz",
+                    "sha256": "2e84d474cf75dfbe3ecdacfb797bbfab71a35c7c2639d1b9f6d5f18b2149ba30"
+                }
+            ]
+        },
+        {
+            "name": "PCRE",
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://ftp.pcre.org/pub/pcre/pcre-8.42.zip",
+                    "sha256": "84c3c4d2eb9166aaed44e39b89e4b6a49eac6fed273bdb844c94fb6c8bdda1b5"
+                }
+            ],
+            "post-install": [
+                "ln -s /app/lib/libpcre.so /app/lib/libpcre.so.3"
+            ]
+        },
+        {
+            "name": "stencyl",
+            "buildsystem": "simple",
+            "build-commands": [
+                "install -D firefox /app/bin/firefox",
+                "install -D stencyl.sh /app/bin/stencyl",
+                "install -D apply_extra /app/bin/apply_extra",
+                "install -Dm644 StencylWorks.prefs /app/StencylPrefs/StencylWorks.prefs",
+                "install -Dm644 com.stencyl.Game.desktop /app/share/applications/com.stencyl.Game.desktop",
+                "install -Dm644 com.stencyl.Game.appdata.xml /app/share/appdata/com.stencyl.Game.appdata.xml",
+                "install -Dm644 com.stencyl.Game-64.png /app/share/icons/hicolor/64x64/apps/com.stencyl.Game.png",
+                "install -Dm644 com.stencyl.Game-128.png /app/share/icons/hicolor/128x128/apps/com.stencyl.Game.png",
+                "install -Dm644 com.stencyl.Game-512.png /app/share/icons/hicolor/512x512/apps/com.stencyl.Game.png"
+            ],
+            "sources": [
+                {
+                    "type": "script",
+                    "dest-filename": "apply_extra",
+                    "commands": [
+                        "tar -xzvf Stencyl-64-full.tar.gz",
+                        "rm -rf Stencyl-64-full.tar.gz"
+                    ]
+                },
+                {
+                    "type": "extra-data",
+                    "filename": "Stencyl-64-full.tar.gz",
+                    "only-arches": ["x86_64"],
+                    "url": "http://mario.stencyl.net/public/Stencyl-64-full.tar.gz",
+                    "sha256": "c27d00dc83b5f443c35d785a0d22340f35c1cdb289c8cfe30417963475d4af29",
+                    "size": 207725021
+                },
+                {
                     "type": "file",
-                    "path": "placeholder.png"
+                    "path": "com.stencyl.Game-64.png"
+                },
+                {
+                    "type": "file",
+                    "path": "com.stencyl.Game-128.png"
+                },
+                {
+                    "type": "file",
+                    "path": "com.stencyl.Game-512.png"
                 },
                 {
                     "type": "file",
@@ -41,15 +131,6 @@
                 {
                     "type": "file",
                     "path": "StencylWorks.prefs"
-                },
-                {
-                    "type": "file",
-                    "path": "apply_extra"
-                },
-                {
-                    "type": "file",
-                    "path": "resources-Makefile",
-                    "dest-filename": "Makefile"
                 }
             ]
         }
